@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+!.env.example
+vendor/
+app/vendor/
+runtime/cache/
+runtime/logs/
+runtime/session/
+*.log
