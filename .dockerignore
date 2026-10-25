@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+node_modules/
+public/assets/react/
 vendor/
 app/vendor/
 runtime/cache/

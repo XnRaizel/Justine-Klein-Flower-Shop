@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbf1ec">
+  <title>Flowers for life's lovely moments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #fbf8f4;
+      --blush: #fbf1ec;
+      --blush-deep: #f7e6df;
+      --charcoal: #2f2a26;
+      --rose: #b85c6b;
+      --rose-deep: #9b3e4f;
+      --sage: #5e7a5e;
+      --copy: #6b5e58;
+      --line: #eae2dc;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: "DM Sans", Arial, sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--charcoal);
+      background: var(--cream);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:focus-visible {
+      outline: 3px solid var(--sage);
+      outline-offset: 4px;
+    }
+
+    .announcement {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      min-height: 49px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 clamp(22px, 4.5vw, 72px);
+      border-bottom: 1px solid var(--line);
+      background: #fffefa;
+      color: #7d756e;
+      font-size: 12px;
+    }
+
+    .announcement-message {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .announcement-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #819779;
+      box-shadow: 0 0 0 3px #81977919;
+    }
+
+    .announcement-link {
+      color: var(--rose-deep);
+      font-weight: 700;
+      transition: color 180ms ease;
+    }
+
+    .announcement-link:hover {
+      color: #763544;
+    }
+
+    .announcement-link span {
+      display: inline-block;
+      margin-left: 4px;
+      transition: transform 180ms ease;
+    }
+
+    .announcement-link:hover span {
+      transform: translateX(4px);
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      min-height: min(600px, calc(100svh - 49px));
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      overflow: hidden;
+      padding: 56px max(7.5vw, calc((100vw - 1200px) / 2));
+      background:
+        radial-gradient(ellipse 38% 65% at 76% 47%, #f4d8d1a6 0%, #f4d8d100 100%),
+        linear-gradient(112deg, #fbf1ec 0%, #f9ede7 48%, #f7e6df 100%);
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 565px);
+      padding: 18px 12px 18px 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 22px;
+      color: var(--sage);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .19em;
+      line-height: 1.5;
+      opacity: 0;
+      text-transform: uppercase;
+      animation: rise-in 700ms 100ms ease-out forwards;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--charcoal);
+      font-family: var(--serif);
+      font-size: clamp(54px, 6.1vw, 76px);
+      font-weight: 500;
+      letter-spacing: -.065em;
+      line-height: .99;
+      opacity: 0;
+      animation: rise-in 800ms 220ms ease-out forwards;
+    }
+
+    h1 span {
+      display: block;
+      margin-top: 5px;
+      color: var(--rose-deep);
+      font-style: italic;
+      font-weight: 500;
+      letter-spacing: -.06em;
+      white-space: nowrap;
+    }
+
+    .hero-description {
+      max-width: 455px;
+      margin: 24px 0 0;
+      color: var(--copy);
+      font-size: 17px;
+      line-height: 1.75;
+      opacity: 0;
+      animation: rise-in 750ms 370ms ease-out forwards;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      min-height: 54px;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+      margin-top: 27px;
+      padding: 0 25px;
+      border: 1px solid #a94d5d;
+      border-radius: 999px;
+      background: var(--rose);
+      box-shadow: 0 9px 22px #a54b5c2a;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      opacity: 0;
+      animation: rise-in 750ms 500ms ease-out forwards;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      background: #a74e5e;
+      box-shadow: 0 13px 27px #a54b5c38;
+    }
+
+    .hero-cta-arrow {
+      display: inline-block;
+      font-size: 17px;
+      font-weight: 500;
+      transition: transform 180ms ease;
+    }
+
+    .hero-cta:hover .hero-cta-arrow {
+      transform: translateX(4px);
+    }
+
+    .hero-note {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 24px 0 0;
+      color: #81766f;
+      font-size: 12px;
+      letter-spacing: .01em;
+      opacity: 0;
+      animation: rise-in 700ms 640ms ease-out forwards;
+    }
+
+    .hero-note svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
+      color: var(--rose);
+    }
+
+    .hero-art {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      min-height: 470px;
+      place-items: center;
+      opacity: 0;
+      transform: scale(.94);
+      animation: art-in 1000ms 180ms cubic-bezier(.2,.7,.25,1) forwards;
+    }
+
+    .hero-art::before {
+      position: absolute;
+      width: min(100%, 510px);
+      aspect-ratio: 1.15;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #fff9f0 4%, #f6dfd5 100%);
+      box-shadow: 0 26px 65px #8d66521a, inset 0 1px 0 #ffffffd9;
+      content: "";
+    }
+
+    .hero-art::after {
+      position: absolute;
+      width: min(78%, 374px);
+      aspect-ratio: 1;
+      border: 1.5px solid #fffdf8d9;
+      border-radius: 50%;
+      content: "";
+      transform: translate(-1%, -1%);
+    }
+
+    .bouquet {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 510px);
+      overflow: visible;
+      filter: drop-shadow(0 16px 13px #75564914);
+      animation: bouquet-float 7s ease-in-out infinite;
+    }
+
+    .flower-sway {
+      transform-box: fill-box;
+      transform-origin: 50% 88%;
+      animation: flower-sway 6s ease-in-out infinite;
+    }
+
+    .flower-sway.delay-a {
+      animation-delay: -1.4s;
+    }
+
+    .flower-sway.delay-b {
+      animation-delay: -3s;
+    }
+
+    .flower-sway.delay-c {
+      animation-delay: -4.2s;
+    }
+
+    .sparkle {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: twinkle 3.2s ease-in-out infinite;
+    }
+
+    .sparkle.delay-a {
+      animation-delay: -1.1s;
+    }
+
+    .drift {
+      animation: drift 5s ease-in-out infinite;
+    }
+
+    .drift.delay-a {
+      animation-delay: -2.4s;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes rise-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes art-in {
+      from { opacity: 0; transform: scale(.94); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes bouquet-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @keyframes flower-sway {
+      0%, 100% { rotate: 0deg; }
+      50% { rotate: 1.8deg; }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: .75; scale: .9; }
+      50% { opacity: 1; scale: 1.12; }
+    }
+
+    @keyframes drift {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -7px; }
+    }
+
+    @media (min-width: 1440px) {
+      .hero {
+        padding-right: max(9vw, calc((100vw - 1200px) / 2));
+        padding-left: max(9vw, calc((100vw - 1200px) / 2));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .hero {
+        min-height: 0;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+        padding: 68px max(7vw, 28px) 44px;
+      }
+
+      .hero-copy {
+        width: min(100%, 570px);
+        margin-inline: auto;
+        padding: 0;
+      }
+
+      .eyebrow {
+        margin-bottom: 17px;
+        font-size: 10px;
+        letter-spacing: .16em;
+      }
+
+      h1 {
+        font-size: clamp(48px, 10vw, 70px);
+      }
+
+      .hero-description {
+        max-width: 480px;
+        margin-top: 19px;
+        font-size: 16px;
+      }
+
+      .hero-cta {
+        min-height: 51px;
+        margin-top: 23px;
+      }
+
+      .hero-note {
+        margin-top: 19px;
+      }
+
+      .hero-art {
+        width: min(100%, 510px);
+        min-height: 0;
+        aspect-ratio: 1.12;
+        margin: 3px auto 0;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .announcement {
+        min-height: 46px;
+        gap: 8px;
+        padding-inline: 17px;
+        font-size: 10px;
+      }
+
+      .announcement-message {
+        gap: 7px;
+      }
+
+      .hero {
+        gap: 0;
+        padding: 53px 23px 33px;
+      }
+
+      h1 {
+        font-size: clamp(43px, 11.7vw, 51px);
+        letter-spacing: -.07em;
+      }
+
+      h1 span {
+        font-size: .94em;
+        letter-spacing: -.065em;
+      }
+
+      .hero-description {
+        margin-top: 17px;
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .hero-cta {
+        min-height: 49px;
+        padding-inline: 21px;
+        font-size: 13px;
+      }
+
+      .hero-art {
+        width: min(112%, 430px);
+        margin: 1px -6% -7px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .announcement {
+        padding-inline: 12px;
+        font-size: 9px;
+      }
+
+      .announcement-message {
+        gap: 6px;
+      }
+
+      .hero {
+        padding-inline: 19px;
+      }
+
+      .eyebrow {
+        font-size: 9px;
+      }
+
+      h1 {
+        font-size: 42px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="announcement" aria-label="Shop announcement">
+    <span class="announcement-message">
+      <span class="announcement-dot" aria-hidden="true"></span>
+      Flowers for life's lovely moments
+    </span>
+    <a class="announcement-link" href="/shop">
+      Explore the collection <span aria-hidden="true">→</span>
+    </a>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Flowers for life's lovely moments</p>
+        <h1 id="hero-title">
+          Make their day
+          <span>feel like a garden.</span>
+        </h1>
+        <p class="hero-description">
+          Handpicked bouquets, made with care and delivered for the moments you want to remember.
+        </p>
+        <a class="hero-cta" href="/shop">
+          Explore the collection <span class="hero-cta-arrow" aria-hidden="true">→</span>
+        </a>
+        <p class="hero-note">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 11.7c-1.4-4.1 1.2-7.7 4.9-8.7.7 3.9-1.1 7.2-4.9 8.7Z" fill="currentColor"/>
+            <path d="M11.7 12.3C8 9.3 4 10.4 2 13.8c3.3 2.1 6.9 1.8 9.7-1.5Z" fill="currentColor" opacity=".82"/>
+            <path d="M12.2 12.5c.7 4.1 4.5 6.3 8.1 5.2-.6-3.9-3.4-6.3-8.1-5.2Z" fill="currentColor" opacity=".66"/>
+            <circle cx="12" cy="12" r="2.1" fill="#F2C14E"/>
+            <path d="M12 14v7" stroke="#6F8F6B" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          Thoughtfully arranged, always.
+        </p>
+      </div>
+
+      <div class="hero-art">
+        <svg class="bouquet" viewBox="0 0 560 570" role="img" aria-labelledby="bouquet-title bouquet-description">
+          <title id="bouquet-title">A hand-arranged garden bouquet</title>
+          <desc id="bouquet-description">Coral, pink, golden and lilac flowers with sage leaves in a blush ceramic vase.</desc>
+          <defs>
+            <linearGradient id="petal-coral" x1="0" y1="0" x2=".7" y2="1">
+              <stop offset="0" stop-color="#F28C8B"/>
+              <stop offset=".56" stop-color="#D9626B"/>
+              <stop offset="1" stop-color="#B94F5C"/>
+            </linearGradient>
+            <linearGradient id="petal-pink" x1=".15" y1="0" x2=".75" y2="1">
+              <stop offset="0" stop-color="#FFD0C5"/>
+              <stop offset=".6" stop-color="#F2A7A0"/>
+              <stop offset="1" stop-color="#DB8585"/>
+            </linearGradient>
+            <linearGradient id="petal-gold" x1=".2" y1="0" x2=".7" y2="1">
+              <stop offset="0" stop-color="#FFE28A"/>
+              <stop offset=".62" stop-color="#F2C14E"/>
+              <stop offset="1" stop-color="#DFA53E"/>
+            </linearGradient>
+            <linearGradient id="petal-lilac" x1=".1" y1="0" x2=".8" y2="1">
+              <stop offset="0" stop-color="#D8C4E7"/>
+              <stop offset=".6" stop-color="#B79AD0"/>
+              <stop offset="1" stop-color="#9378B3"/>
+            </linearGradient>
+            <linearGradient id="leaf-fill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#A8C29A"/>
+              <stop offset="1" stop-color="#6F8F6B"/>
+            </linearGradient>
+            <linearGradient id="leaf-fill-light" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#BED0A9"/>
+              <stop offset="1" stop-color="#8FAE88"/>
+            </linearGradient>
+            <linearGradient id="vase-fill" x1=".1" y1="0" x2=".9" y2="1">
+              <stop offset="0" stop-color="#F6E3D9"/>
+              <stop offset=".48" stop-color="#E9C9BC"/>
+              <stop offset="1" stop-color="#D8B2A4"/>
+            </linearGradient>
+            <radialGradient id="center-coral" cx=".38" cy=".28" r=".8">
+              <stop offset="0" stop-color="#FFE09A"/>
+              <stop offset=".32" stop-color="#E8AD5F"/>
+              <stop offset="1" stop-color="#A7614C"/>
+            </radialGradient>
+            <radialGradient id="center-gold" cx=".35" cy=".25" r=".85">
+              <stop offset="0" stop-color="#FFE9A6"/>
+              <stop offset=".42" stop-color="#C88443"/>
+              <stop offset="1" stop-color="#80503E"/>
+            </radialGradient>
+            <filter id="soft-shadow" x="-.5" y="-.5" width="2" height="2">
+              <feGaussianBlur stdDeviation="8"/>
+            </filter>
+            <g id="petal">
+              <path d="M0-14C-7-23-8-38-1-48 1-51 4-50 6-47 14-36 12-22 4-13Z"/>
+              <path d="M0-17C-4-27-4-37 0-43" fill="none" stroke="#FFF8E9" stroke-opacity=".5" stroke-width="1.3" stroke-linecap="round"/>
+            </g>
+            <g id="small-petal">
+              <path d="M0-10C-6-18-7-29-1-36 1-39 4-37 6-34 12-25 10-15 4-9Z"/>
+              <path d="M0-13C-3-21-3-29 0-33" fill="none" stroke="#FFF8E9" stroke-opacity=".48" stroke-width="1" stroke-linecap="round"/>
+            </g>
+            <g id="leaf">
+              <path d="M0 0C8-19 28-28 47-20 39-3 20 7 0 0Z"/>
+              <path d="M3-1C17-7 29-14 42-19" fill="none" stroke="#E8F0DB" stroke-opacity=".7" stroke-width="1.3" stroke-linecap="round"/>
+            </g>
+          </defs>
+
+          <!-- Grounding shadow and the fan of hand-drawn stems. -->
+          <ellipse cx="284" cy="495" rx="101" ry="15" fill="#9C7163" opacity=".14" filter="url(#soft-shadow)"/>
+          <g fill="none" stroke="#6F8F6B" stroke-linecap="round">
+            <path d="M276 390C255 326 207 244 151 151" stroke-width="5"/>
+            <path d="M284 390C276 310 250 241 235 137" stroke-width="4.6"/>
+            <path d="M290 390C300 314 320 231 343 137" stroke-width="5"/>
+            <path d="M294 390C327 315 375 257 415 193" stroke-width="4.7"/>
+            <path d="M277 391C233 336 174 294 123 265" stroke-width="4"/>
+            <path d="M299 391C354 344 410 318 455 286" stroke-width="4"/>
+            <path d="M287 390C287 322 286 264 283 207" stroke-width="4"/>
+          </g>
+
+          <!-- Leaves follow the direction of their stems for a loose garden shape. -->
+          <g>
+            <g transform="translate(206 280) rotate(-26)"><use href="#leaf" fill="url(#leaf-fill-light)"/></g>
+            <g transform="translate(241 333) rotate(160) scale(.82)"><use href="#leaf" fill="url(#leaf-fill)"/></g>
+            <g transform="translate(247 255) rotate(189) scale(.77)"><use href="#leaf" fill="url(#leaf-fill)"/></g>
+            <g transform="translate(270 309) rotate(-38) scale(.9)"><use href="#leaf" fill="url(#leaf-fill-light)"/></g>
+            <g transform="translate(320 272) rotate(18) scale(.9)"><use href="#leaf" fill="url(#leaf-fill)"/></g>
+            <g transform="translate(333 332) rotate(197) scale(.86)"><use href="#leaf" fill="url(#leaf-fill-light)"/></g>
+            <g transform="translate(366 282) rotate(-20) scale(.88)"><use href="#leaf" fill="url(#leaf-fill-light)"/></g>
+            <g transform="translate(188 320) rotate(200) scale(.78)"><use href="#leaf" fill="url(#leaf-fill)"/></g>
+            <g transform="translate(396 339) rotate(13) scale(.9)"><use href="#leaf" fill="url(#leaf-fill)"/></g>
+            <g transform="translate(293 245) rotate(188) scale(.68)"><use href="#leaf" fill="url(#leaf-fill-light)"/></g>
+          </g>
+
+          <!-- Small buds add height and keep the bouquet silhouette irregular. -->
+          <g class="flower-sway delay-c">
+            <path d="M177 194C164 184 157 170 161 157" fill="none" stroke="#6F8F6B" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M151 160C142 145 154 132 168 138 179 143 174 158 164 164Z" fill="url(#petal-pink)"/>
+            <path d="M155 155C155 148 160 143 165 142" fill="none" stroke="#FFF4E8" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M164 166C153 166 146 160 143 153" fill="none" stroke="#8FAE88" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <g class="flower-sway delay-a">
+            <path d="M398 248C423 235 441 215 446 198" fill="none" stroke="#6F8F6B" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M438 201C429 188 438 177 451 181 463 185 461 199 450 204Z" fill="url(#petal-gold)"/>
+          </g>
+
+          <!-- Coral garden rose, with a second petal layer and softly lit center. -->
+          <g class="flower-sway" transform="translate(151 148) rotate(-13)">
+            <g fill="url(#petal-coral)">
+              <use href="#petal" fill="url(#petal-coral)" transform="rotate(0)"/>
+              <use href="#petal" fill="url(#petal-coral)" transform="rotate(60)"/>
+              <use href="#petal" fill="url(#petal-coral)" transform="rotate(120)"/>
+              <use href="#petal" fill="url(#petal-coral)" transform="rotate(180)"/>
+              <use href="#petal" fill="url(#petal-coral)" transform="rotate(240)"/>
+              <use href="#petal" fill="url(#petal-coral)" transform="rotate(300)"/>
+            </g>
+            <g color="#F48787">
+              <use href="#small-petal" fill="#F48787" transform="rotate(26) scale(.83)"/>
+              <use href="#small-petal" fill="#F48787" transform="rotate(116) scale(.83)"/>
+              <use href="#small-petal" fill="#F48787" transform="rotate(206) scale(.83)"/>
+              <use href="#small-petal" fill="#F48787" transform="rotate(296) scale(.83)"/>
+            </g>
+            <circle r="10.5" fill="url(#center-coral)"/>
+            <circle cx="-3" cy="-3" r="2" fill="#FFF0B9" opacity=".88"/>
+            <g fill="#F9D79A" opacity=".85">
+              <circle cx="4" cy="-4" r="1.15"/><circle cx="5" cy="2" r=".9"/>
+              <circle cx="-5" cy="3" r="1"/><circle cx="0" cy="6" r=".8"/>
+            </g>
+          </g>
+
+          <!-- Blush blossom, tucked slightly behind the taller central blooms. -->
+          <g class="flower-sway delay-b" transform="translate(235 135) rotate(8) scale(.79)">
+            <g fill="url(#petal-pink)">
+              <use href="#petal" fill="url(#petal-pink)" transform="rotate(0)"/>
+              <use href="#petal" fill="url(#petal-pink)" transform="rotate(72)"/>
+              <use href="#petal" fill="url(#petal-pink)" transform="rotate(144)"/>
+              <use href="#petal" fill="url(#petal-pink)" transform="rotate(216)"/>
+              <use href="#petal" fill="url(#petal-pink)" transform="rotate(288)"/>
+            </g>
+            <g color="#FFD0C5">
+              <use href="#small-petal" fill="#FFD0C5" transform="rotate(36) scale(.72)"/>
+              <use href="#small-petal" fill="#FFD0C5" transform="rotate(156) scale(.72)"/>
+              <use href="#small-petal" fill="#FFD0C5" transform="rotate(276) scale(.72)"/>
+            </g>
+            <circle r="8" fill="url(#center-coral)"/>
+            <circle cx="-2" cy="-2" r="1.7" fill="#FFF3C7"/>
+            <g fill="#FFE2AD"><circle cx="3" cy="1" r=".9"/><circle cx="-3" cy="3" r=".8"/></g>
+          </g>
+
+          <!-- Golden daisy, angled open toward the light. -->
+          <g class="flower-sway delay-a" transform="translate(343 138) rotate(12)">
+            <g fill="url(#petal-gold)">
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(0)"/>
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(45)"/>
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(90)"/>
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(135)"/>
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(180)"/>
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(225)"/>
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(270)"/>
+              <use href="#petal" fill="url(#petal-gold)" transform="rotate(315)"/>
+            </g>
+            <circle r="11.5" fill="url(#center-gold)"/>
+            <circle cx="-3.5" cy="-4" r="2.4" fill="#FFF0B0" opacity=".8"/>
+            <g fill="#F6D98A" opacity=".8">
+              <circle cx="5" cy="-4" r="1.1"/><circle cx="6" cy="2" r="1"/>
+              <circle cx="-5" cy="4" r="1"/><circle cx="1" cy="7" r=".9"/>
+              <circle cx="-7" cy="-1" r=".8"/>
+            </g>
+          </g>
+
+          <!-- Lavender cosmos with a smaller second layer of petals. -->
+          <g class="flower-sway delay-c" transform="translate(415 193) rotate(-9) scale(.84)">
+            <g fill="url(#petal-lilac)">
+              <use href="#petal" fill="url(#petal-lilac)" transform="rotate(0)"/>
+              <use href="#petal" fill="url(#petal-lilac)" transform="rotate(60)"/>
+              <use href="#petal" fill="url(#petal-lilac)" transform="rotate(120)"/>
+              <use href="#petal" fill="url(#petal-lilac)" transform="rotate(180)"/>
+              <use href="#petal" fill="url(#petal-lilac)" transform="rotate(240)"/>
+              <use href="#petal" fill="url(#petal-lilac)" transform="rotate(300)"/>
+            </g>
+            <g color="#D9C6E8">
+              <use href="#small-petal" fill="#D9C6E8" transform="rotate(30) scale(.74)"/>
+              <use href="#small-petal" fill="#D9C6E8" transform="rotate(150) scale(.74)"/>
+              <use href="#small-petal" fill="#D9C6E8" transform="rotate(270) scale(.74)"/>
+            </g>
+            <circle r="9.5" fill="url(#center-gold)"/>
+            <circle cx="-3" cy="-3" r="2" fill="#FFF2C7" opacity=".85"/>
+            <g fill="#FBE1A0"><circle cx="4" cy="-2" r="1"/><circle cx="-3" cy="4" r=".8"/></g>
+          </g>
+
+          <!-- A smaller coral wildflower brings a fifth flower into the arrangement. -->
+          <g class="flower-sway delay-b" transform="translate(123 265) rotate(-18) scale(.61)">
+            <g fill="url(#petal-coral)">
+              <use href="#small-petal" fill="url(#petal-coral)" transform="rotate(0)"/>
+              <use href="#small-petal" fill="url(#petal-coral)" transform="rotate(72)"/>
+              <use href="#small-petal" fill="url(#petal-coral)" transform="rotate(144)"/>
+              <use href="#small-petal" fill="url(#petal-coral)" transform="rotate(216)"/>
+              <use href="#small-petal" fill="url(#petal-coral)" transform="rotate(288)"/>
+            </g>
+            <circle r="6.2" fill="url(#center-gold)"/>
+            <circle cx="-2" cy="-2" r="1.4" fill="#FFF2C7"/>
+          </g>
+
+          <!-- Floating petals and garden-light specks. -->
+          <g class="sparkle" fill="#E9B760">
+            <path d="M457 147l5.2 10.6 11.7 1.7-8.45 8.2 2 11.6-10.45-5.5-10.45 5.5 2-11.6-8.45-8.2 11.7-1.7Z"/>
+          </g>
+          <g class="sparkle delay-a" fill="#FFFDF5">
+            <path d="M96 221l3.4 7 7.7 1.1-5.55 5.4 1.3 7.6-6.85-3.6-6.85 3.6 1.3-7.6-5.55-5.4 7.7-1.1Z"/>
+          </g>
+          <circle class="drift" cx="83" cy="295" r="4.2" fill="#E3A19A"/>
+          <circle class="drift delay-a" cx="477" cy="263" r="5" fill="#D98A87"/>
+          <circle class="sparkle delay-a" cx="103" cy="191" r="3.4" fill="#E8B45D"/>
+          <circle class="sparkle" cx="461" cy="330" r="3.7" fill="#B79AD0"/>
+          <circle class="drift delay-a" cx="393" cy="116" r="3.3" fill="#F1C66D"/>
+          <g class="drift" transform="translate(104 250) rotate(-36)">
+            <path d="M0 0C-7-9-4-17 1-20 9-14 7-6 0 0Z" fill="#E9A09B"/>
+            <path d="M0-2c1-5 1-9 1-14" fill="none" stroke="#FFF2E8" stroke-width="1" opacity=".7"/>
+          </g>
+          <g class="drift delay-a" transform="translate(466 226) rotate(48)">
+            <path d="M0 0C-6-8-4-15 1-18 8-13 6-5 0 0Z" fill="#D6C2E4"/>
+          </g>
+
+          <!-- Rounded handmade vase, with a rolled rim and a soft ceramic highlight. -->
+          <path d="M197 377C214 389 348 389 365 377L351 476C349 494 337 505 319 507H243C225 505 213 494 211 476Z" fill="url(#vase-fill)" stroke="#CDA99A" stroke-width="2.2"/>
+          <path d="M209 391C212 426 218 461 222 479 224 490 232 496 246 498" fill="none" stroke="#FFF8F0" stroke-width="5" stroke-linecap="round" opacity=".82"/>
+          <path d="M313 402C326 414 332 430 330 445" fill="none" stroke="#F8E9DF" stroke-width="3" stroke-linecap="round" opacity=".86"/>
+          <path d="M330 445C329 459 325 471 320 480" fill="none" stroke="#F8E9DF" stroke-width="3" stroke-linecap="round" opacity=".86"/>
+          <path d="M197 375C214 383 348 383 365 375L362 390C342 399 221 399 200 390Z" fill="#E9CDBF" stroke="#CDA99A" stroke-width="2"/>
+          <path d="M204 381C235 386 327 386 358 381" fill="none" stroke="#FFF8F1" stroke-width="2.3" stroke-linecap="round" opacity=".85"/>
+        </svg>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

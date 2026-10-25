@@ -162,7 +162,7 @@ For Render deployment instructions, database setup, and current production-readi
 
 ### Frontend
 
-The customer and admin layouts load Vue 3 for interactive UI enhancements, while PHP continues to render pages and handle routes and database access. Vue is loaded from a CDN, so interactive features require an internet connection; the PHP-rendered pages remain available if Vue cannot load.
+The customer storefront and admin dashboard use React, built with Vite from `src/`. PHP/LavaLust serves the app shell and provides the same-origin API. Run `npm ci` and `npm run build` after changing the React app; the Docker build runs this frontend build automatically.
 
 ### Database
 

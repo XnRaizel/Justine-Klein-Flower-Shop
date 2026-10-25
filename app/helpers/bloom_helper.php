@@ -60,6 +60,15 @@ if ( ! function_exists('bloom_session'))
 	function bloom_session()
 	{
 		if (session_status() === PHP_SESSION_NONE) {
+			$is_https = ! empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off';
+			$is_production = getenv('APP_ENV') === 'production';
+			session_set_cookie_params(array(
+				'lifetime' => 0,
+				'path' => '/',
+				'secure' => $is_https || $is_production,
+				'httponly' => true,
+				'samesite' => 'Lax',
+			));
 			session_start();
 		}
 	}
@@ -128,4 +137,3 @@ if ( ! function_exists('field_error'))
 		return isset($errors[$field]) ? '<div class="field-error">' . e($errors[$field]) . '</div>' : '';
 	}
 }
-

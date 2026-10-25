@@ -4,6 +4,7 @@
 -- Re-importing is safe: tables are dropped and recreated.
 -- Demo logins (all use the password: password123)
 --   admin@bloomexpress.test  (admin)    staff@bloomexpress.test (staff)
+--   rider@bloomexpress.test  (rider)
 --   maria@example.com (customer)
 -- =====================================================================
 
@@ -18,6 +19,8 @@ DROP TABLE IF EXISTS deliveries;
 DROP TABLE IF EXISTS order_item_addons;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS custom_order_messages;
+DROP TABLE IF EXISTS custom_order_requests;
 DROP TABLE IF EXISTS cart_items;
 DROP TABLE IF EXISTS carts;
 DROP TABLE IF EXISTS addons;
@@ -98,6 +101,38 @@ CREATE TABLE cart_items (
   CONSTRAINT fk_cart_items_product_id FOREIGN KEY (product_id) REFERENCES products(product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE custom_order_requests (
+  custom_order_request_id INT NOT NULL AUTO_INCREMENT,
+  request_number VARCHAR(24) NOT NULL,
+  user_id INT NOT NULL,
+  title VARCHAR(120) NOT NULL,
+  occasion VARCHAR(80),
+  requested_flowers TEXT NOT NULL,
+  colors VARCHAR(255),
+  budget DECIMAL(10,2),
+  recipient_name VARCHAR(100),
+  delivery_address VARCHAR(255),
+  requested_delivery_at DATETIME,
+  quote_total DECIMAL(10,2),
+  status ENUM('new','in_review','waiting_for_customer','quoted','accepted','declined','converted_to_order','closed') NOT NULL DEFAULT 'new',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (custom_order_request_id),
+  UNIQUE KEY uq_custom_order_requests_number (request_number),
+  CONSTRAINT fk_custom_order_requests_user_id FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE custom_order_messages (
+  custom_order_message_id INT NOT NULL AUTO_INCREMENT,
+  custom_order_request_id INT NOT NULL,
+  user_id INT NOT NULL,
+  message TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (custom_order_message_id),
+  CONSTRAINT fk_custom_order_messages_request_id FOREIGN KEY (custom_order_request_id) REFERENCES custom_order_requests(custom_order_request_id),
+  CONSTRAINT fk_custom_order_messages_user_id FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE orders (
   order_id INT NOT NULL AUTO_INCREMENT,
   order_number VARCHAR(20) NOT NULL,
@@ -107,10 +142,15 @@ CREATE TABLE orders (
   delivery_fee DECIMAL(10,2) NOT NULL,
   total DECIMAL(10,2) NOT NULL,
   card_message VARCHAR(255),
+  custom_order_request_id INT,
+  customer_hidden_at DATETIME NULL,
+  operations_archived_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (order_id),
   UNIQUE KEY uq_orders_order_number (order_number),
-  CONSTRAINT fk_orders_user_id FOREIGN KEY (user_id) REFERENCES users(user_id)
+  UNIQUE KEY uq_orders_custom_order_request_id (custom_order_request_id),
+  CONSTRAINT fk_orders_user_id FOREIGN KEY (user_id) REFERENCES users(user_id),
+  CONSTRAINT fk_orders_custom_order_request_id FOREIGN KEY (custom_order_request_id) REFERENCES custom_order_requests(custom_order_request_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE order_items (
@@ -138,30 +178,64 @@ CREATE TABLE deliveries (
   order_id INT NOT NULL,
   recipient_name VARCHAR(100) NOT NULL,
   address VARCHAR(255) NOT NULL,
-  latitude DECIMAL(10,7) NOT NULL,
-  longitude DECIMAL(10,7) NOT NULL,
-  distance_km DECIMAL(6,2) NOT NULL,
+  latitude DECIMAL(10,7) NULL,
+  longitude DECIMAL(10,7) NULL,
+  distance_km DECIMAL(6,2) NULL,
   scheduled_at DATETIME NOT NULL,
-  status ENUM('scheduled','preparing','out_for_delivery','delivered','failed') NOT NULL DEFAULT 'scheduled',
+  status ENUM('scheduled','preparing','out_for_delivery','delivered','failed','cancelled') NOT NULL DEFAULT 'scheduled',
   assigned_to INT,
   delivered_at DATETIME,
+  operations_archived_at DATETIME NULL,
+  confirmation_pin CHAR(6),
+  delivered_to VARCHAR(100),
+  confirmed_by INT,
   PRIMARY KEY (delivery_id),
   UNIQUE KEY uq_deliveries_order_id (order_id),
   CONSTRAINT fk_deliveries_order_id FOREIGN KEY (order_id) REFERENCES orders(order_id),
-  CONSTRAINT fk_deliveries_assigned_to FOREIGN KEY (assigned_to) REFERENCES users(user_id)
+  CONSTRAINT fk_deliveries_assigned_to FOREIGN KEY (assigned_to) REFERENCES users(user_id),
+  CONSTRAINT fk_deliveries_confirmed_by FOREIGN KEY (confirmed_by) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE payments (
   payment_id INT NOT NULL AUTO_INCREMENT,
   order_id INT NOT NULL,
+  payment_type ENUM('full','deposit','balance') NOT NULL DEFAULT 'full',
   provider VARCHAR(30) NOT NULL,
   provider_ref VARCHAR(100),
+  provider_url VARCHAR(500),
   method VARCHAR(20) NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
-  status ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  status ENUM('pending','paid','failed','partially_refunded','refunded') NOT NULL DEFAULT 'pending',
   paid_at DATETIME,
+  paid_by INT,
   PRIMARY KEY (payment_id),
-  CONSTRAINT fk_payments_order_id FOREIGN KEY (order_id) REFERENCES orders(order_id)
+  CONSTRAINT fk_payments_order_id FOREIGN KEY (order_id) REFERENCES orders(order_id),
+  CONSTRAINT fk_payments_paid_by FOREIGN KEY (paid_by) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE payment_refunds (
+  refund_id INT NOT NULL AUTO_INCREMENT,
+  payment_id INT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  recorded_by INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (refund_id),
+  KEY idx_payment_refunds_payment_id (payment_id),
+  CONSTRAINT fk_payment_refunds_payment_id FOREIGN KEY (payment_id) REFERENCES payments(payment_id),
+  CONSTRAINT fk_payment_refunds_recorded_by FOREIGN KEY (recorded_by) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE order_status_history (
+  history_id INT NOT NULL AUTO_INCREMENT,
+  order_id INT NOT NULL,
+  from_status ENUM('pending','confirmed','preparing','out_for_delivery','delivered','cancelled') NULL,
+  to_status ENUM('pending','confirmed','preparing','out_for_delivery','delivered','cancelled') NOT NULL,
+  changed_by INT NOT NULL,
+  changed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (history_id),
+  KEY idx_order_status_history_order_id (order_id),
+  CONSTRAINT fk_order_status_history_order_id FOREIGN KEY (order_id) REFERENCES orders(order_id),
+  CONSTRAINT fk_order_status_history_changed_by FOREIGN KEY (changed_by) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE stock_logs (
@@ -195,12 +269,13 @@ CREATE TABLE notifications (
 INSERT INTO roles (role_id, role_name) VALUES
   (1, 'customer'),
   (2, 'staff'),
-  (3, 'admin');
+  (3, 'admin'),
+  (4, 'rider');
 
 INSERT INTO users (user_id, role_id, full_name, email, phone, password_hash, created_at) VALUES
   (1, 3, 'Owner Admin', 'admin@bloomexpress.test', '09170000001', '$2y$10$dBM4tIbWjQJHd1xWnlMqq.7fVOZs5AY7Tsslln9Asn7J1WHBRs.LG', NOW() - INTERVAL 30 DAY),
   (2, 2, 'Shop Staff', 'staff@bloomexpress.test', '09170000002', '$2y$10$dBM4tIbWjQJHd1xWnlMqq.7fVOZs5AY7Tsslln9Asn7J1WHBRs.LG', NOW() - INTERVAL 30 DAY),
-  (3, 2, 'Rider Staff', 'rider@bloomexpress.test', '09170000003', '$2y$10$dBM4tIbWjQJHd1xWnlMqq.7fVOZs5AY7Tsslln9Asn7J1WHBRs.LG', NOW() - INTERVAL 30 DAY),
+  (3, 4, 'Rider Staff', 'rider@bloomexpress.test', '09170000003', '$2y$10$dBM4tIbWjQJHd1xWnlMqq.7fVOZs5AY7Tsslln9Asn7J1WHBRs.LG', NOW() - INTERVAL 30 DAY),
   (4, 1, 'Maria Santos', 'maria@example.com', '09171234567', '$2y$10$dBM4tIbWjQJHd1xWnlMqq.7fVOZs5AY7Tsslln9Asn7J1WHBRs.LG', NOW() - INTERVAL 30 DAY),
   (5, 1, 'Juan Dela Cruz', 'juan@example.com', '09181234567', '$2y$10$dBM4tIbWjQJHd1xWnlMqq.7fVOZs5AY7Tsslln9Asn7J1WHBRs.LG', NOW() - INTERVAL 30 DAY),
   (6, 1, 'Ana Reyes', 'ana@example.com', '09191234567', '$2y$10$dBM4tIbWjQJHd1xWnlMqq.7fVOZs5AY7Tsslln9Asn7J1WHBRs.LG', NOW() - INTERVAL 30 DAY);

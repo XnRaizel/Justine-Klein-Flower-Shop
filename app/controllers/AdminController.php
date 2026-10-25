@@ -2,6 +2,21 @@
 defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 
 class AdminController extends Controller {
+	public function before_action() {
+		bloom_session();
+		if (empty($_SESSION['user_id'])) {
+			http_response_code(401);
+			exit('Staff sign-in required.');
+		}
+		$user = $this->db->raw('SELECT r.role_name FROM users u
+			INNER JOIN roles r ON r.role_id = u.role_id WHERE u.user_id = ? LIMIT 1',
+			array((int) $_SESSION['user_id']))->fetch();
+		if ( ! $user || ! in_array($user['role_name'], array('admin', 'staff'), true)) {
+			http_response_code(403);
+			exit('Staff access required.');
+		}
+	}
+
 	public function __construct() {
 		parent::__construct();
 		bloom_session(); // needed for flash messages and the CSRF token
@@ -12,9 +27,20 @@ class AdminController extends Controller {
 		$this->call->view('admin/' . $view, array_merge(array('title' => $title), $extra));
 	}
 
+	private function require_admin() {
+		$user = $this->db->raw('SELECT r.role_name FROM users u
+			INNER JOIN roles r ON r.role_id = u.role_id WHERE u.user_id = ? LIMIT 1',
+			array((int) $_SESSION['user_id']))->fetch();
+		if ( ! $user || $user['role_name'] !== 'admin') {
+			http_response_code(403);
+			exit('Admin access required.');
+		}
+	}
+
 	public function login()      { $this->page('login', 'Staff & Admin Login'); }
 
 	public function dashboard() {
+		$this->require_admin();
 		$this->page('dashboard', 'Dashboard', array(
 			'pending'    => $this->Order_model->count_by_status('pending'),
 			'delivering' => $this->Order_model->count_by_status('out_for_delivery'),
@@ -26,10 +52,11 @@ class AdminController extends Controller {
 
 	public function orders()     { $this->page('orders',     'Orders',     array('orders'     => $this->Order_model->list_all())); }
 	public function deliveries() { $this->page('deliveries', 'Deliveries', array('deliveries' => $this->Delivery_model->list_all())); }
-	public function inventory()  { $this->page('inventory',  'Inventory',  array('products'   => $this->Product_model->list_admin())); }
-	public function staff()      { $this->page('staff',      'Staff & Roles', array('staff'    => $this->User_model->list_staff())); }
+	public function inventory()  { $this->page('inventory',  'Inventory',  array('products'   => $this->Product_model->list_inventory())); }
+	public function staff()      { $this->require_admin(); $this->page('staff',      'Staff & Roles', array('staff'    => $this->User_model->list_staff())); }
 
 	public function reports() {
+		$this->require_admin();
 		$since = date('Y-m-d 00:00:00', strtotime('-6 days'));
 		$this->page('reports', 'Sales Reports', array(
 			'days' => $this->Order_model->report_by_day($since),
@@ -41,6 +68,7 @@ class AdminController extends Controller {
 
 	/** READ (list) with optional search. */
 	public function products() {
+		$this->require_admin();
 		$q = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
 		$this->page('products', 'Products', array(
 			'products' => $this->Product_model->list_admin($q),
@@ -50,6 +78,7 @@ class AdminController extends Controller {
 
 	/** READ (one record). */
 	public function product_view($id) {
+		$this->require_admin();
 		$product = $this->Product_model->find_admin($id);
 		if ( ! $product) { show_404(); return; }
 		$this->page('product_view', $product['name'], array(
@@ -60,11 +89,13 @@ class AdminController extends Controller {
 
 	/** CREATE: show the empty form. */
 	public function product_create() {
+		$this->require_admin();
 		$this->product_form('create', array('category_id' => '', 'name' => '', 'description' => '', 'price' => '', 'stock_qty' => '0', 'low_stock_level' => '5'), array());
 	}
 
 	/** CREATE: validate and insert. */
 	public function product_store() {
+		$this->require_admin();
 		if ( ! $this->check_csrf()) { return; }
 		list($clean, $errors) = $this->Product_model->validate($_POST);
 		if ($errors) { $this->product_form('create', $clean, $errors); return; }
@@ -82,6 +113,7 @@ class AdminController extends Controller {
 
 	/** UPDATE: show the form filled with the saved values. */
 	public function product_edit($id) {
+		$this->require_admin();
 		$product = $this->Product_model->find_admin($id);
 		if ( ! $product) { show_404(); return; }
 		$this->product_form('edit', $product, array(), $product);
@@ -89,6 +121,7 @@ class AdminController extends Controller {
 
 	/** UPDATE: validate and save to the same row. */
 	public function product_update($id) {
+		$this->require_admin();
 		if ( ! $this->check_csrf()) { return; }
 		$product = $this->Product_model->find_admin($id);
 		if ( ! $product) { $this->missing(); return; }
@@ -108,6 +141,7 @@ class AdminController extends Controller {
 
 	/** Archive or restore (soft hide, keeps order history). */
 	public function product_archive($id) {
+		$this->require_admin();
 		if ( ! $this->check_csrf()) { return; }
 		$product = $this->Product_model->find_admin($id);
 		if ( ! $product) { $this->missing(); return; }
@@ -125,6 +159,7 @@ class AdminController extends Controller {
 
 	/** DELETE step 1: confirmation page (nothing is deleted here). */
 	public function product_confirm_delete($id) {
+		$this->require_admin();
 		$product = $this->Product_model->find_admin($id);
 		if ( ! $product) { show_404(); return; }
 		$this->page('product_delete', 'Delete product', array(
@@ -136,6 +171,7 @@ class AdminController extends Controller {
 
 	/** DELETE step 2: POST only, CSRF checked, blocked when history exists. */
 	public function product_destroy($id) {
+		$this->require_admin();
 		if ( ! $this->check_csrf()) { return; }
 		$product = $this->Product_model->find_admin($id);
 		if ( ! $product) { $this->missing(); return; }

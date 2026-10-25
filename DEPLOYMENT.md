@@ -2,15 +2,16 @@
 
 This project can run on Render as a Docker web service with a separate MySQL service. Render is a good fit because the project already uses Apache/PHP in Docker and requires MySQL.
 
-> **Demo/staging only for now.** The current customer login and registration forms do not authenticate users, checkout does not place orders or process payments, and admin routes do not have authentication middleware configured. Do not use this deployment for real customer data, real orders, payments, or public administration until those workflows are implemented and reviewed.
+> **Configure and test before accepting live orders.** The storefront now requires a 50% deposit for orders. Cash deposits must be verified by staff; online deposits use PayMongo Hosted Checkout and are only offered when both PayMongo secrets are configured. Use PayMongo test credentials first, configure the webhook, and verify both payment and cancellation flows before enabling live credentials.
 
 ## What the deployment configuration does
 
 - `render.yaml` defines the PHP web service and prompts for database connection values without storing credentials in the repository.
-- `Dockerfile` installs PHP's MySQL extension, serves the app from `public/`, enables Apache rewrites, and makes only `runtime/` writable by Apache.
+- `Dockerfile` builds the Vite frontend, installs PHP's MySQL and cURL extensions, serves the app from `public/`, enables Apache rewrites, and makes only `runtime/` writable by Apache.
 - `docker-entrypoint.sh` configures Apache to listen on Render's `PORT` (default `10000`).
 - The application uses `RENDER_EXTERNAL_URL` for absolute links when `APP_BASE_URL` is not explicitly set.
 - Render generates `APP_KEY`; production mode enables secure, HTTP-only cookies and error logging.
+- Online deposits require `PAYMONGO_SECRET_KEY` and `PAYMONGO_WEBHOOK_SECRET` to be set privately in the web service environment.
 
 ## 1. Put the project in a GitHub repository
 
@@ -53,14 +54,18 @@ One option is to temporarily deploy [Adminer on Render](https://render.com/docs/
 
 The app's database configuration already reads `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` from the environment. `RENDER_EXTERNAL_URL` supplies the production base URL automatically; set `APP_BASE_URL` only if you need to override it.
 
+The updated internal fulfillment screens require the migrations for checkout, custom orders, deposits, fulfillment/refund history, rider confirmation, and closed-record archiving to be applied in date order to an existing database. Apply `database/migrations/20261025_order_fulfillment.sql` after `database/migrations/20261025_order_deposits.sql`, then apply `database/migrations/20261025_rider_confirmations.sql` and `database/migrations/20261025_order_archive_visibility.sql`. New databases created from `database/bloom_express.sql` already include the rider role, delivery-confirmation fields, and archive visibility fields.
+
+Online checkout remains optional. Do not add PayMongo credentials until beginning that integration. When ready, add `PAYMONGO_SECRET_KEY` and `PAYMONGO_WEBHOOK_SECRET` as private environment variables and configure the PayMongo webhook URL as `https://<your-domain>/webhooks/paymongo` for `checkout_session.payment.paid`.
+
 ## Updating the site
 
 Push changes to the repository branch connected to Render. Render will rebuild the Docker image and deploy it. Do not re-import the starter SQL file to update a live database.
 
 ## Before a real public launch
 
-- Implement and enforce customer and admin authentication and authorization.
-- Implement and test registration, login, cart updates, order creation, and payment processing.
+- Test registration, login, cart updates, the complete staff/rider order and delivery lifecycle (including PIN confirmation), cash deposit and balance recording, cancellation, inventory restoration, and manual refund recording.
+- Configure and test PayMongo deposits and webhook confirmation in test mode only when ready to begin the payment integration.
 - Replace demo accounts/passwords and sample data; use unique, strong credentials.
 - Review CSRF protections, session settings, error handling, privacy requirements, backups, and database access.
 - Confirm current Render service and disk pricing and configure regular database backups.

@@ -9,6 +9,8 @@
 vendor/
 app/vendor/
 composer.lock
+node_modules/
+public/assets/react/
 
 # Cache & Logs
 runtime/*

@@ -34,6 +34,10 @@ class Product_model extends Model {
 		return $this->db->raw($sql . ' ORDER BY p.product_id ASC', $args)->fetchAll();
 	}
 
+	public function list_inventory() {
+		return $this->db->raw($this->base . ' ORDER BY p.stock_qty DESC, p.name ASC')->fetchAll();
+	}
+
 	/** Active products at or below their low-stock level. */
 	public function list_low_stock() {
 		return $this->db->raw($this->base . ' WHERE p.is_archived = 0 AND p.stock_qty <= p.low_stock_level ORDER BY p.stock_qty ASC')->fetchAll();

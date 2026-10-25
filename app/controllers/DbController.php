@@ -9,7 +9,8 @@ class DbController extends Controller {
 	public function check() {
 		$cfg = database_config()['main'];
 		$tables = array('roles', 'users', 'categories', 'products', 'addons', 'carts', 'cart_items', 'orders',
-			'order_items', 'order_item_addons', 'deliveries', 'payments', 'stock_logs', 'notifications');
+			'order_items', 'order_item_addons', 'order_status_history', 'deliveries', 'payments', 'payment_refunds',
+			'custom_order_requests', 'custom_order_messages', 'stock_logs', 'notifications');
 		$counts = array();
 		foreach ($tables as $t) {
 			$counts[$t] = (int) $this->db->table($t)->count();

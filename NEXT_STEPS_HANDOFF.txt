@@ -1,0 +1,102 @@
+JUSTINE KLEIN FLOWER SHOP
+Development and deployment handoff
+Prepared: October 22, 2026
+
+PROJECT DECISIONS TO KEEP
+- Official system name: Justine Klein Flower Shop. Bloom Express was the old name.
+- Use React for the customer/admin interface, with the existing LavaLust/PHP backend and MySQL database for now.
+- Do not edit the user's school papers or README unless they explicitly ask.
+- The user wants the system and Checking 1-2-3 document to match when those documents are revised.
+- SDLC paper note for a future revision: use the official project name and update module status boxes to reflect actual work; keep the stated dates unless the group officially changes them. Analysis/design target: October 23, 2026. Acquisition/development continues through November 20, 2026.
+- Flower catalog details (names, prices, descriptions, categories, photos) are expected from the user later. Do not invent or bulk-replace them.
+- External integrations were deferred: PayMongo, Google Maps, SMS/Semaphore, Google OAuth, and SMTP/email.
+- Do not put credentials or secrets in source control. Existing seed accounts/passwords are for local testing only, never production.
+
+CURRENT IMPLEMENTATION
+- React/Vite storefront and admin pages are built and served by the PHP app.
+- Backend uses LavaLust/PHP and MySQL (schema/database currently named bloom_express despite the official system name).
+- Existing workflows include accounts/authentication, catalog, cart, COD orders, order tracking/history, stock accounting, and admin product CRUD.
+- Custom flower-order workflow exists: customers submit a request; staff/admin review, message, and quote; customers accept or decline; staff/admin can convert accepted quotes into COD orders.
+- Custom orders do not use fake catalog products and do not reserve catalog stock.
+- Customer conversation screen is now a messenger-style interface at /custom-orders (menu label: "Message us"). It has a conversation list, thread, details, and composer.
+- Both customer and staff/admin views poll for updates in the background every five seconds; they do not reload the whole page.
+- In-site messaging authenticates customers with their existing shop account (the account email identifies the account; password is the normal sign-in password). Messages do not currently send email notifications.
+- Local custom-order migration was applied to the bloom_express MySQL database at the time this handoff was created.
+- Local checks previously passed: npm run build; PHP syntax checks; local page/API smoke tests; request -> staff quote -> customer acceptance -> COD conversion end-to-end test. Temporary test records from those tests were deleted.
+- A later local two-way messaging test passed: customer saw a staff reply without reloading; staff endpoint received the customer's reply. Its temporary conversation was removed.
+- React build passed after the messenger UI and automatic polling changes.
+- Work in the workspace has not been committed. Review all changed files before staging/committing; some earlier React/core-order changes predate the chat UI.
+
+REMAINING WORK BEFORE DEPLOYMENT
+
+1. Finish and verify the customer/staff messaging UX
+   - Test customer and staff/admin pages side by side in separate browser sessions.
+   - Verify background updates in both directions without page reload, status changes, quote actions, and mobile layout.
+   - Check that the admin/staff inbox is usable. Customer view is messenger-style; if desired, convert the staff/admin thread to the same messenger layout.
+   - Check behavior on network/API errors and when switching between conversations.
+   - Email notifications are optional and separate; ask the user before starting SMTP/email setup.
+
+2. Complete core functional and access checks
+   - Test customer ownership boundaries (one customer cannot read/message another customer's request).
+   - Test staff/admin permissions and unauthenticated responses.
+   - Test quote/revision/accept/decline/conversion and order cancellation; confirm custom orders never affect catalog stock.
+   - Inspect order reporting, admin lists, delivery and payment views for custom orders. Ensure reports do not misrepresent custom orders as catalog product sales.
+   - Verify migrations work on a copy of the existing schema and don't require re-importing the destructive full SQL seed file.
+   - Preserve database backups before any schema/data operation.
+
+3. Add the real flower catalog
+   - Wait for the user to provide names, descriptions, prices, categories, and photos.
+   - Add/import only the supplied catalog data; verify images, prices, category links, and stock.
+
+4. Decide and implement only the integrations the group actually needs
+   - PayMongo: payment account, backend/webhook verification, failure/success handling, and environment-held secrets.
+   - Google Maps: address/pin selection and delivery-distance/fee behavior.
+   - SMS (Semaphore): phone verification or order updates, if required.
+   - Google OAuth: optional sign-in provider.
+   - SMTP/email: optional notifications for messages, quotes, and order updates. Email alerts do not replace the in-site chat.
+   - Keep each integration disabled until its credentials and tests are ready.
+
+5. Align records and documentation (only when user requests document editing)
+   - Revise the SDLC paper's name/status boxes as described above, without changing dates unless officially changed.
+   - Compare Checking 1-2-3 with the actual system so their scope/status/labels match.
+   - Do not erase or rewrite unrelated paper context.
+
+6. Deployment preparation
+   - Review all working changes and remove development-only/test data.
+   - Add production-safe configuration and a documented migration/backup/restore procedure.
+   - Configure production environment variables and secure HTTPS/session cookies.
+   - Disable or change demo accounts/passwords; never deploy seeded test credentials as real accounts.
+   - Test production build, PHP routes/API, database migrations, login/session/CSRF, and custom-order chat on a staging deployment.
+   - Set up repository/branch and deployment pipeline only after user confirms the target setup.
+
+DEPLOYMENT OPTIONS DISCUSSED
+
+Recommended simplest architecture for this existing code:
+- Deploy React assets and the PHP/LavaLust app together as one PHP web service (Docker is a possible Render route).
+- Use a separately hosted, persistent MySQL database and set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME in the service environment.
+- Keeping frontend and API on one domain preserves the current same-origin /api/v1 behavior and avoids the extra complexity of cross-origin login cookies and CSRF.
+- Render supports Docker/PHP deployment, but its managed database offering is PostgreSQL, not a drop-in replacement for this MySQL app. Do not connect this MySQL-configured app to Render Postgres without a planned backend/schema migration.
+- Render free web services can sleep after inactivity; this can make the first visit/message after idle noticeably slow. Free service/storage limitations must be checked at deployment time. A free database plan may have expiry/data-persistence limits; don't use it for important production data.
+
+Alternative discussed:
+- Deploy the Vite/React frontend on Vercel and host PHP plus MySQL elsewhere.
+- This is possible but is not currently plug-and-play: the React code calls same-origin /api/v1 and PHP serves the built Vite assets. Separate hosting requires an API base URL, CORS/credentials rules, secure cross-site cookie and CSRF design, and SPA route fallbacks. Prefer same-site custom subdomains if feasible.
+- Vercel frontend hosting does not host this existing PHP/LavaLust/MySQL backend automatically.
+
+- Don't promise or configure "free production hosting" until current host/database quotas and persistence rules are checked. Free tiers are suitable for demos, with limitations.
+
+READY-TO-PASTE PROMPT FOR THE NEXT COPILOT AGENT
+
+Continue development of the existing Justine Klein Flower Shop project in this workspace. First read NEXT_STEPS_HANDOFF.txt and inspect the actual current code/schema/worktree; treat the handoff as context, not a substitute for code inspection. Use React for the UI and keep the existing LavaLust/PHP/MySQL architecture unless you identify a concrete blocker and explain it before changing architecture.
+
+Do not edit the user's school papers or README unless explicitly requested. Do not invent flower catalog data; wait for the user's supplied list. Do not request or expose secrets, do not commit demo credentials, and do not deploy or create paid services without explicit approval.
+
+The custom-order messaging feature and messenger-style customer interface are implemented. Verify and finish the remaining work before proposing deployment:
+1) Test the customer and staff/admin message flows in separate sessions; verify background updates without full page reload, mobile behavior, status/quote actions, permission/ownership protection, and error behavior. Customer polling currently runs every five seconds; inspect the staff/admin screen and make it equally usable/live if needed.
+2) Verify custom quote acceptance and conversion, COD order history/admin views/reporting, cancellation behavior, and that custom orders never reserve or alter catalog stock.
+3) Review database migrations for safe application to existing data. Do not re-import database/bloom_express.sql as it drops/recreates tables. Back up before applying schema changes.
+4) Run focused PHP checks, npm run build, and local end-to-end tests; clean up only the test data you create.
+5) Report remaining tasks and propose a deployment choice. For current code, compare: (A) single PHP+React Docker web service plus external persistent MySQL, which preserves same-origin API/session behavior; (B) React on Vercel plus PHP/MySQL elsewhere, which requires API URL, CORS, cookie/CSRF, and routing changes. Render managed Postgres is not compatible with the current MySQL configuration without a deliberate migration. Explain free-tier sleep/storage/database-expiry limitations based on current official docs.
+6) Do not deploy until the user confirms the hosting architecture, GitHub/repository setup, and whether a paid/persistent database is acceptable. If asked to deploy, provide a clear step-by-step sequence and stop before any irreversible or paid action unless approved.
+
+At completion, summarize verified behavior, failed checks, files changed, and the next user decision in plain language. Link workspace files with absolute paths when responding.

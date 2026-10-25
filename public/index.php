@@ -1,4 +1,17 @@
 <?php
+if (PHP_SAPI === 'cli-server') {
+	$public_root = realpath(__DIR__);
+	$request_path = parse_url(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/', PHP_URL_PATH);
+	if ($public_root && is_string($request_path)) {
+		$relative_path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, rawurldecode($request_path));
+		$static_file = realpath($public_root . DIRECTORY_SEPARATOR . ltrim($relative_path, DIRECTORY_SEPARATOR));
+		if ($static_file && is_file($static_file)
+			&& strpos($static_file, $public_root . DIRECTORY_SEPARATOR) === 0) {
+			return false;
+		}
+	}
+}
+
 define('PREVENT_DIRECT_ACCESS', TRUE);
 /**
  * ------------------------------------------------------------------
